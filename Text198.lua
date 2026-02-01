@@ -1,5 +1,6 @@
 -- ===============================
--- FOLLOW DETRÁS + CAMARA LOCK SOLO SI NO TENEMOS Knife
+-- FOLLOW DETRÁS + CAMERA LOCK SOLO SI NO TENEMOS Knife
+-- SOLO JUGADORES FUERA DE LOBBY + NPCs
 -- ===============================
 
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -37,15 +38,24 @@ local function shouldFollow()
     return false
 end
 
+-- Buscar siguiente objetivo válido
 local function findNextTarget()
+    -- Jugadores fuera de Lobby
     for _, plr in pairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+        if plr ~= LocalPlayer 
+           and plr.Team 
+           and plr.Team.Name ~= "Lobby" 
+           and plr.Character 
+           and plr.Character:FindFirstChild("HumanoidRootPart") then
+           
             local hum = plr.Character:FindFirstChild("Humanoid")
             if hum and hum.Health > 0 then
                 return plr.Character
             end
         end
     end
+
+    -- NPCs (todos)
     for _, npc in pairs(botsFolder:GetChildren()) do
         if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") then
             local hum = npc:FindFirstChild("Humanoid")
@@ -54,9 +64,11 @@ local function findNextTarget()
             end
         end
     end
+
     return nil
 end
 
+-- Crear BodyPosition + BodyGyro
 local function ensureBody(char)
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
@@ -90,7 +102,6 @@ end)
 -- ===============================
 -- Loop principal
 -- ===============================
-
 RunService.Heartbeat:Connect(function()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
